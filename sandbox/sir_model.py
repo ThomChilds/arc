@@ -8,7 +8,7 @@ from ndlib.viz.mpl.DiffusionTrend import DiffusionTrend
 
 G = nx.read_gml("../data/dolphins.gml", label="id")
 # G = nx.erdos_renyi_graph(1000, 0.1)
-   
+
 # for node in G.nodes():
 #     G.nodes[node]['state'] = 'S'
 #
@@ -45,6 +45,4 @@ trends = model.build_trends(iterations)
 # Plotting
 viz = DiffusionTrend(model, trends)
 viz.plot()
-
-
 
