@@ -20,7 +20,7 @@ DEBUGGING = "debugging/"
 
 # ----------------------------------------------------------------------- #
 # get logged variable for plot debugging
-mdic = io.loadmat(DEBUGGING + "/sir_simulation_email-Eu-core.mat")
+mdic = io.loadmat(DEBUGGING + "/sir_simulation_email_beta12.mat")
 NETWORK_NAME = mdic["NETWORK_NAME"][0]
 M = mdic["M"][0]
 
@@ -105,10 +105,6 @@ xlim = (np.min(unique_coreness), np.max(unique_coreness))
 ylim = (np.min(unique_degrees), np.max(unique_degrees))
 ax.set_xlim(xlim)
 ax.set_ylim(ylim)
-# ax.set_xticks(unique_coreness)
-# ax.set_yticks(unique_degrees)
-# ax.set_xticklabels(unique_coreness)
-# ax.set_yticklabels(unique_degrees)
 ax.set_xlabel("Coreness $k_S$")
 ax.set_ylabel("Degree $k$")
 plt.colorbar(im0, ax=ax, label='$M$(%)')
@@ -165,10 +161,6 @@ y_labels = np.linspace(
     math.floor(np.max(unique_centralities)*100)/100, 5)
 ax.set_xlim(xlim)
 ax.set_ylim(ylim)
-# ax.set_xticks(unique_coreness)
-# ax.set_yticks(y_labels)
-# ax.set_xticklabels(unique_coreness)
-# ax.set_yticklabels(y_labels)
 ax.set_xlabel("Coreness $k_S$")
 ax.set_ylabel("Betweenness Centrality $C_B$")
 plt.colorbar(im0, ax=ax, label='$M$(%)')
