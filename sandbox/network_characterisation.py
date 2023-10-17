@@ -8,7 +8,10 @@ from networkx import algorithms as alg
 
 OUTPUT_PATH = "./output/"
 CMAP_STYLE = "winter"
-NETWORK_NAME = "karate"
+NETWORK_NAME = "power"
+
+NODE_SIZE = 5
+EDGE_WIDTH = 0.1
 
 """FROM GML FORMAT"""
 G = nx.read_gml(f"./data/{NETWORK_NAME}.gml", label="id")
@@ -18,8 +21,9 @@ G = nx.read_gml(f"./data/{NETWORK_NAME}.gml", label="id")
 #     f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
 
 """From network model"""
-# G = nx.barabasi_albert_graph(n=100, m=2)
+# G = nx.barabasi_albert_graph(n=1000, m=3)
 # G = nx.watts_strogatz_graph(1000, 5, 0.1)
+# G = nx.erdos_renyi_graph(1000, 0.02)
 
 """Remove self loops and disconnected components"""
 G.remove_edges_from(nx.selfloop_edges(G))
@@ -34,9 +38,10 @@ fig = plt.figure(f"Degree analysis of the {NETWORK_NAME} network",
 axgrid = fig.add_gridspec(5, 4)
 
 ax0 = fig.add_subplot(axgrid[0:3, :])
-pos = nx.spring_layout(G, seed=10396953)
-nx.draw_networkx_nodes(G, pos, ax=ax0, node_size=10)
-nx.draw_networkx_edges(G, pos, ax=ax0, alpha=0.4, width=0.1)
+# pos = nx.spring_layout(G, seed=10396953)
+pos = nx.kamada_kawai_layout(G)
+nx.draw_networkx_nodes(G, pos, ax=ax0, node_size=NODE_SIZE)
+nx.draw_networkx_edges(G, pos, ax=ax0, alpha=0.4, width=EDGE_WIDTH)
 ax0.set_title(f"Connected components of the {NETWORK_NAME} network")
 ax0.set_axis_off()
 
@@ -81,18 +86,18 @@ nodes_color = [
     'red' if G.nodes[n]["layer"] == desired_layer else 'blue' for n in G.nodes]
 
 ax0 = fig.add_subplot(axgrid[:, 0:3])
-Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
-pos = nx.spring_layout(Gcc, seed=10396953)
-nx.draw(G, node_color=nodes_color, node_size=20, pos=pos)
-ax0.set_title(f"{NETWORK_NAME} network - outer shell in red")
+nx.draw(G, node_color=nodes_color, node_size=NODE_SIZE,
+        width=EDGE_WIDTH, pos=pos)
+ax0.set_title(
+    f"Charachterisation of the {NETWORK_NAME} network - outer shell in red")
 ax0.set_axis_off()
 
 ax1 = fig.add_subplot(axgrid[:, 3:])
 Gcc = shell.subgraph(sorted(
     nx.connected_components(shell), key=len, reverse=True)[0])
-nx.draw_networkx_nodes(Gcc, pos, ax=ax1, node_size=20, node_color="red")
-nx.draw_networkx_edges(Gcc, pos, ax=ax1, alpha=0.4)
-ax1.set_title(f"Outer shell of the {NETWORK_NAME} network")
+nx.draw_networkx_nodes(Gcc, pos, ax=ax1, node_size=NODE_SIZE, node_color="red")
+nx.draw_networkx_edges(Gcc, pos, ax=ax1, alpha=0.4, width=EDGE_WIDTH)
+ax1.set_title(f"Outer shell of the {NETWORK_NAME} network (detail)")
 ax1.set_axis_off()
 
 fig.tight_layout()
@@ -104,15 +109,14 @@ fig, ax = plt.subplots()
 colors = [G.nodes[i]["layer"] for i in list(G.nodes)]
 norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
 fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
-             ax=ax, label='Shell layer')
+             ax=ax, label='Coreness ($k_S$)')
 nx.draw_networkx_nodes(
-    G, pos, node_size=20,
+    G, pos, node_size=NODE_SIZE,
     node_color=colors, cmap=CMAP_STYLE, ax=ax)
-nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax)
-plt.title("Characterisation of shell layer each node belongs to")
-plt.legend()
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax, width=EDGE_WIDTH)
+plt.title("Coreness ($k_S$) of each node")
 plt.tight_layout()
-plt.savefig(OUTPUT_PATH + f"node_shell_characterisation_{NETWORK_NAME}.png")
+plt.savefig(OUTPUT_PATH + f"node_coreness_characterisation_{NETWORK_NAME}.png")
 
 
 """Characterise degree of each node"""
@@ -120,12 +124,12 @@ fig, ax = plt.subplots()
 colors = [tup[1] for tup in list(G.degree())]
 norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
 fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
-             ax=ax, label='Degree')
+             ax=ax, label='Degree ($k$)')
 nx.draw_networkx_nodes(
-    G, pos, node_size=20,
+    G, pos, node_size=NODE_SIZE,
     node_color=colors, cmap=CMAP_STYLE, ax=ax)
-nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax)
-plt.title("Characterisation of the degree of each node")
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax, width=EDGE_WIDTH)
+plt.title("Degree ($k$) of each node")
 plt.tight_layout()
 plt.savefig(OUTPUT_PATH + f"node_degree_characterisation_{NETWORK_NAME}.png")
 
@@ -137,12 +141,53 @@ fig, ax = plt.subplots()
 colors = list(centrality.values())
 norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
 fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
-             ax=ax, label='Betweenness centrality')
+             ax=ax, label='Betweenness Centrality ($C_B$)')
 nx.draw_networkx_nodes(
-    G, pos, node_size=20,
+    G, pos, node_size=NODE_SIZE,
     node_color=colors, cmap=CMAP_STYLE, ax=ax)
-nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax)
-plt.title("Characterisation of the betweenness centrality of each node")
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax, width=EDGE_WIDTH)
+plt.title("Betweenness Centrality $C_B$ of each node")
 plt.tight_layout()
 plt.savefig(
     OUTPUT_PATH + f"node_centrality_characterisation_{NETWORK_NAME}.png")
+
+"""Plot with all three characteristics as subplots"""
+"""Coreness"""
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 4))
+colors = [G.nodes[i]["layer"] for i in list(G.nodes)]
+norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
+fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
+             ax=ax[0], label='Coreness ($k_S$)')
+nx.draw_networkx_nodes(
+    G, pos, node_size=NODE_SIZE,
+    node_color=colors, cmap=CMAP_STYLE, ax=ax[0])
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax[0], width=EDGE_WIDTH)
+ax[0].set_title("Coreness ($k_S$) of each node")
+
+
+"""Degree"""
+colors = [tup[1] for tup in list(G.degree())]
+norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
+fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
+             ax=ax[1], label='Degree ($k$)')
+nx.draw_networkx_nodes(
+    G, pos, node_size=NODE_SIZE,
+    node_color=colors, cmap=CMAP_STYLE, ax=ax[1])
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax[1], width=EDGE_WIDTH)
+ax[1].set_title("Degree ($k$) of each node")
+
+
+"""Betweenness Centrality"""
+centrality = alg.betweenness_centrality(G)
+colors = list(centrality.values())
+norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))
+fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=CMAP_STYLE),
+             ax=ax[2], label='Betweenness Centrality ($C_B$)')
+nx.draw_networkx_nodes(
+    G, pos, node_size=NODE_SIZE,
+    node_color=colors, cmap=CMAP_STYLE, ax=ax[2])
+nx.draw_networkx_edges(G, pos, alpha=0.4, ax=ax[2], width=EDGE_WIDTH)
+ax[2].set_title("Betweenness Centrality $C_B$ of each node")
+plt.tight_layout()
+plt.savefig(
+    OUTPUT_PATH + f"centrality_degree_coreness_{NETWORK_NAME}.png")
