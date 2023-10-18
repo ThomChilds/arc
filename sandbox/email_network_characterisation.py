@@ -8,17 +8,17 @@ from networkx import algorithms as alg
 
 OUTPUT_PATH = "./output/"
 CMAP_STYLE = "winter"
-NETWORK_NAME = "power"
+NETWORK_NAME = "email"
 
 NODE_SIZE = 5
 EDGE_WIDTH = 0.1
 
 """FROM GML FORMAT"""
-G = nx.read_gml(f"./data/{NETWORK_NAME}.gml", label="id")
+# G = nx.read_gml(f"./data/{NETWORK_NAME}.gml", label="id")
 
 """# FROM .TXT FILE"""
-# G = nx.read_edgelist(
-#     f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
+G = nx.read_edgelist(
+    f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
 
 """From network model"""
 # G = nx.barabasi_albert_graph(n=1000, m=3)
@@ -32,10 +32,24 @@ G = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
 degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
 dmax = max(degree_sequence)
 
-fig = plt.figure(f"Degree analysis of the {NETWORK_NAME} network",
+centrality = alg.betweenness_centrality(G)
+centralities = [v for _, v in centrality.items()]
+
+corenesses = []
+shell_layer = 0
+current_shell = nx.core.k_shell(G, k=shell_layer)
+while (len(current_shell.nodes) != 0 or shell_layer == 0):
+    for node in list(current_shell.nodes):
+        G.nodes[node]["layer"] = shell_layer
+        corenesses.append(shell_layer)
+    shell_layer += 1
+    current_shell = nx.core.k_shell(G, k=shell_layer)
+final_layer = shell_layer - 1
+
+fig = plt.figure(f"Analysis of the {NETWORK_NAME} network",
                  figsize=(8, 8))
 # Create a gridspec for adding subplots of different sizes
-axgrid = fig.add_gridspec(5, 4)
+axgrid = fig.add_gridspec(5, 6)
 
 ax0 = fig.add_subplot(axgrid[0:3, :])
 # pos = nx.spring_layout(G, seed=10396953)
@@ -46,33 +60,29 @@ ax0.set_title(f"Connected components of the {NETWORK_NAME} network")
 ax0.set_axis_off()
 
 ax1 = fig.add_subplot(axgrid[3:, :2])
-ax1.plot(degree_sequence, "b-", marker="o")
-ax1.set_title("Degree Rank Plot")
-ax1.set_ylabel("Degree")
-ax1.set_xlabel("Rank")
+ax1.bar(*np.unique(degree_sequence, return_counts=True))
+ax1.set_title("Degree histogram")
+ax1.set_xlabel("Degree")
+ax1.set_ylabel("# of Nodes")
 
-ax2 = fig.add_subplot(axgrid[3:, 2:])
-ax2.bar(*np.unique(degree_sequence, return_counts=True))
-ax2.set_title("Degree histogram")
-ax2.set_xlabel("Degree")
+ax2 = fig.add_subplot(axgrid[3:, 2:4])
+ax2.bar(*np.unique(centralities, return_counts=True),
+        width=np.mean(np.diff(np.unique(centralities)))*50)
+ax2.set_title("Centrality histogram")
+ax2.set_xlabel("Betweenness Centrality")
 ax2.set_ylabel("# of Nodes")
+
+ax3 = fig.add_subplot(axgrid[3:, 4:])
+ax3.bar(*np.unique(corenesses, return_counts=True))
+ax3.set_title("Coreness histogram")
+ax3.set_xlabel("Coreness")
+ax3.set_ylabel("# of Nodes")
 
 fig.tight_layout()
 plt.savefig(OUTPUT_PATH + f"network_characterisation_{NETWORK_NAME}.png")
 
 
 """Attribute to each node in the network its k_s (shell layer) value"""
-shell_layer = 0
-current_shell = nx.core.k_shell(G, k=shell_layer)
-while (len(current_shell.nodes) != 0 or shell_layer == 0):
-    for node in list(current_shell.nodes):
-        G.nodes[node]["layer"] = shell_layer
-    shell_layer += 1
-    current_shell = nx.core.k_shell(G, k=shell_layer)
-
-final_layer = shell_layer - 1
-
-
 fig = plt.figure(f"{NETWORK_NAME} network and outer shell", figsize=(12, 6))
 
 """Plot a specific shell layer for the given network (final layer)"""
@@ -135,8 +145,6 @@ plt.savefig(OUTPUT_PATH + f"node_degree_characterisation_{NETWORK_NAME}.png")
 
 
 """Characterise betweenness centrality of each node"""
-centrality = alg.betweenness_centrality(G)
-
 fig, ax = plt.subplots()
 colors = list(centrality.values())
 norm = mpl.colors.Normalize(vmin=min(colors), vmax=max(colors))

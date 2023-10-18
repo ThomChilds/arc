@@ -20,14 +20,14 @@ DEBUGGING = "debugging/"
 
 # ----------------------------------------------------------------------- #
 # get logged variable for plot debugging
-mdic = io.loadmat(DEBUGGING + "/sir_simulation_email_beta8.mat")
+mdic = io.loadmat(DEBUGGING + "/sir_simulation_power_beta65.mat")
 NETWORK_NAME = mdic["NETWORK_NAME"][0]
 M = mdic["M"][0]
 
 # Read the nework
-# G = nx.read_gml(f"data/{NETWORK_NAME}.gml", label="id")
-G = nx.read_edgelist(
-    f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
+G = nx.read_gml(f"data/{NETWORK_NAME}.gml", label="id")
+# G = nx.read_edgelist(
+#     f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
 # Input graph has self loops which is not permitted
 G.remove_edges_from(nx.selfloop_edges(G))
 G = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
@@ -95,8 +95,7 @@ for i in range(0, len(ks_vs_degree)):
 
 # Visualize in the colormap grid format:
 fig, ax = plt.subplots(1, 1)
-im0 = ax.imshow(resize_image(ks_vs_degree, len(ks_vs_degree[:, 0]) // 5,
-                             len(ks_vs_degree[0, :])), cmap='jet',
+im0 = ax.imshow(ks_vs_degree, cmap='jet',
                 aspect=square_aspect_ratio_ks_k,
                 extent=(0, np.max(unique_coreness),
                         0, np.max(unique_degrees)),
@@ -105,6 +104,7 @@ xlim = (np.min(unique_coreness), np.max(unique_coreness))
 ylim = (np.min(unique_degrees), np.max(unique_degrees))
 ax.set_xlim(xlim)
 ax.set_ylim(ylim)
+ax.set_xticks([int(c) for c in unique_coreness])
 ax.set_xlabel("Coreness $k_S$")
 ax.set_ylabel("Degree $k$")
 plt.colorbar(im0, ax=ax, label='$M$(%)')
@@ -147,8 +147,8 @@ for i in range(0, len(ks_vs_cb)):
 
 # Visualize in the colormap grid format:
 fig, ax = plt.subplots(1, 1)
-donwsizing_ratio = 5
-im0 = ax.imshow(resize_image(ks_vs_cb, len(ks_vs_cb[:, 0]) // 15,
+donwsizing_ratio = 100
+im0 = ax.imshow(resize_image(ks_vs_cb, len(ks_vs_cb[:, 0]) // donwsizing_ratio,
                              len(ks_vs_cb[0, :])), cmap='jet',
                 aspect=square_aspect_ratio_ks_cb,
                 extent=(0, len(unique_coreness),
@@ -161,6 +161,7 @@ y_labels = np.linspace(
     math.floor(np.max(unique_centralities)*100)/100, 5)
 ax.set_xlim(xlim)
 ax.set_ylim(ylim)
+ax.set_xticks([int(c) for c in unique_coreness])
 ax.set_xlabel("Coreness $k_S$")
 ax.set_ylabel("Betweenness Centrality $C_B$")
 plt.colorbar(im0, ax=ax, label='$M$(%)')
