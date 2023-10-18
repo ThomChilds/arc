@@ -6,12 +6,12 @@ import networkx as nx
 import ndlib.models.epidemics as ep
 import ndlib.models.ModelConfig as mconf
 
-NETWORK_NAME = "email"
+NETWORK_NAME = "power"
 
 
 """Network selection in which to simulate the infection/spreading process"""
 """FROM .GML FILE"""
-# G = nx.read_gml(f"data/{NETWORK_NAME}.gml", label="id")
+G = nx.read_gml(f"data/{NETWORK_NAME}.gml", label="id")
 
 """FROM MODEL NETWORK"""
 # G = nx.erdos_renyi_graph(1000, 0.1)
@@ -19,8 +19,8 @@ NETWORK_NAME = "email"
 # G = nx.barabasi_albert_graph(n=100, m=2)
 
 """FROM .TXT FILE"""
-G = nx.read_edgelist(
-    f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
+# G = nx.read_edgelist(
+#     f"data/{NETWORK_NAME}.txt", create_using=nx.Graph(), nodetype=int)
 # Input graph has self loops which is not permitted
 G.remove_edges_from(nx.selfloop_edges(G))
 G = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
@@ -31,7 +31,7 @@ print(f"The total number of nodes is {NUMBER_NODES}.")
 """SIR infection model parameters."""
 #     infected nodes will infect other nodes with probability beta, and recover
 #     (become non-susceptible to reinfection) after one timestep
-BETA = 0.08  # P(infectious node infecting a susceptible neighbour)
+BETA = 0.65  # P(infectious node infecting a susceptible neighbour)
 GAMMA = 1.0  # P(infectious node becoming recovered after one timestep)
 NUM_ITERATIONS = 30  # Number of iterations for which to perform simulation
 NUM_REPETITION_EACH_NODE = 50  # Number of realisations for each starting node
