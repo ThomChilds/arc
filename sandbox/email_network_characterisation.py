@@ -83,7 +83,7 @@ plt.savefig(OUTPUT_PATH + f"network_characterisation_{NETWORK_NAME}.png")
 
 
 """Attribute to each node in the network its k_s (shell layer) value"""
-fig = plt.figure(f"{NETWORK_NAME} network and outer shell", figsize=(12, 6))
+fig = plt.figure(f"{NETWORK_NAME} network and inner shell", figsize=(12, 6))
 
 """Plot a specific shell layer for the given network (final layer)"""
 desired_layer = final_layer
@@ -99,7 +99,7 @@ ax0 = fig.add_subplot(axgrid[:, 0:3])
 nx.draw(G, node_color=nodes_color, node_size=NODE_SIZE,
         width=EDGE_WIDTH, pos=pos)
 ax0.set_title(
-    f"Charachterisation of the {NETWORK_NAME} network - outer shell in red")
+    f"Characterisation of the {NETWORK_NAME} network - inner shell in red")
 ax0.set_axis_off()
 
 ax1 = fig.add_subplot(axgrid[:, 3:])
@@ -107,7 +107,7 @@ Gcc = shell.subgraph(sorted(
     nx.connected_components(shell), key=len, reverse=True)[0])
 nx.draw_networkx_nodes(Gcc, pos, ax=ax1, node_size=NODE_SIZE, node_color="red")
 nx.draw_networkx_edges(Gcc, pos, ax=ax1, alpha=0.4, width=EDGE_WIDTH)
-ax1.set_title(f"Outer shell of the {NETWORK_NAME} network (detail)")
+ax1.set_title(f"Inner shell of the {NETWORK_NAME} network (detail)")
 ax1.set_axis_off()
 
 fig.tight_layout()
