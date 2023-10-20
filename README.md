@@ -28,7 +28,7 @@ $ pip install -r requirements.txt --extra-index-url https://pypi.org/simple/
     .
     ├── data                    # physical network data (.gml, .txt)
     ├── debugging               # folder for storing the reuslts of the simulations (.mat)
-    ├── output                  # local folder for saving the plots produced by analysis scripts
+    ├── output                  # folder for saving the plots produced by analysis scripts
     ├── references              # folder with papers describing the implemented methods
     ├── sandbox                 # folder with the .py scripts used for analysis
         ├── *_network_characterisation.py                   # for characterising the networks
